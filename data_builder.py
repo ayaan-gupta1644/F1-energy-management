@@ -34,10 +34,21 @@ for i, lap in laps.iterlaps():
     tel['Compound'] = lap['Compound']
     tel['TyreLife'] = lap['TyreLife']
     
-    # --- HARVESTING COLUMN ---
-    # 1 if braking OR if speed is dropping at full throttle (Super Clipping)
-    tel['Is_Harvesting'] = ((tel['Brake'] == True) | 
-                            ((tel['Throttle'] == 100) & (tel['Speed'].diff() < -0.5))).astype(int)
+    # 1. Handle Brake (Check if it's already % or needs a proxy)
+    if tel['Brake'].max() > 1:
+        # Data is already providing a percentage/pressure
+        tel['Brake_Pct'] = tel['Brake']
+    else:
+        # Data is Boolean; create a proxy based on deceleration (Acc < 0)
+        # We normalize negative acceleration to a 0-100 scale
+        tel['Brake_Pct'] = tel['Acc'].apply(lambda x: abs(x) if x < 0 else 0)
+        max_decel = tel['Brake_Pct'].max()
+        if max_decel > 0:
+            tel['Brake_Pct'] = (tel['Brake_Pct'] / max_decel) * 100
+
+    # 2. Robust Harvesting Indicator
+    # Harvesting = Braking AND Speed > 100 km/h (MGU-K needs rotation to work)
+    tel['Is_Harvesting'] = ((tel['Brake_Pct'] > 5) & (tel['Speed'] > 100)).astype(int)
 
     # Append to list
     all_laps_data.append(tel)
