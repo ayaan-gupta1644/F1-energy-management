@@ -2,7 +2,7 @@ import fastf1
 import pandas as pd
 import numpy as np
 
-TOTAL_LAPS = 53
+TOTAL_LAPS = 55
 START_FUEL = 100.0  # kg
 BURN_PER_LAP = START_FUEL / TOTAL_LAPS
 
@@ -42,7 +42,7 @@ for i, lap in laps.iterlaps():
     # Car is heaviest on Lap 1, lightest on Lap 53
     current_fuel = START_FUEL - (lap['LapNumber'] * BURN_PER_LAP)
     tel['Fuel_Weight'] = max(current_fuel, 1.0) # Ensure it doesn't hit zero
-    
+        
     # 1. Handle Brake (Check if it's already % or needs a proxy)
     if tel['Brake'].max() > 1:
         # Data is already providing a percentage/pressure
