@@ -2,6 +2,10 @@ import fastf1
 import pandas as pd
 import numpy as np
 
+TOTAL_LAPS = 53
+START_FUEL = 100.0  # kg
+BURN_PER_LAP = START_FUEL / TOTAL_LAPS
+
 # 1. Setup
 fastf1.Cache.enable_cache('f1_cache') 
 session = fastf1.get_session(2025, 'Suzuka', 'R')
@@ -33,6 +37,11 @@ for i, lap in laps.iterlaps():
     tel['LapNumber'] = lap['LapNumber']
     tel['Compound'] = lap['Compound']
     tel['TyreLife'] = lap['TyreLife']
+
+    # Fuel Load Calculation
+    # Car is heaviest on Lap 1, lightest on Lap 53
+    current_fuel = START_FUEL - (lap['LapNumber'] * BURN_PER_LAP)
+    tel['Fuel_Weight'] = max(current_fuel, 1.0) # Ensure it doesn't hit zero
     
     # 1. Handle Brake (Check if it's already % or needs a proxy)
     if tel['Brake'].max() > 1:
