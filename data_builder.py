@@ -34,6 +34,11 @@ for i, lap in laps.iterlaps():
     tel['Compound'] = lap['Compound']
     tel['TyreLife'] = lap['TyreLife']
     
+    # --- HARVESTING COLUMN ---
+    # 1 if braking OR if speed is dropping at full throttle (Super Clipping)
+    tel['Is_Harvesting'] = ((tel['Brake'] == True) | 
+                            ((tel['Throttle'] == 100) & (tel['Speed'].diff() < -0.5))).astype(int)
+
     # Append to list
     all_laps_data.append(tel)
 
@@ -43,5 +48,5 @@ final_df = pd.concat(all_laps_data, ignore_index=True)
 # Clean up NaN values created by the .diff() function
 final_df.fillna(0, inplace=True)
 
-final_df.to_csv(f'{driver}_suzuka_robust_data.csv', index=False)
+final_df.to_csv(f'{driver}_suzuka_data_advanced.csv', index=False)
 print("Dataset complete! Ready for model training.")
